@@ -1,0 +1,174 @@
+---
+geometry: left=0.8in,right=0.8in,top=0.8in,bottom=0.8in
+fontsize: 11pt
+title: "STA 445 S26 Assignment 5"
+author: "Kylee Peshlakai"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(lubridate)
+```
+
+## Problem 1
+
+Convert the following to date or date/time objects.
+
+a.  September 13, 2010.
+```{r}
+mdy("September 13, 2010")
+```
+
+
+b.  Sept 13, 2010.
+  Sept is not recognized.
+```{r}
+mdy("Sept 13, 2010")
+```
+
+c.  Sep 13, 2010.
+```{r}
+mdy("Sep 13, 2010")
+```
+
+
+d.  S 13, 2010. Comment on the month abbreviation needs.
+  The month needs more than one letter to specify what month it is.
+```{r}
+mdy("S 13, 2010")
+```
+
+e.  07-Dec-1941.
+```{r}
+dmy("07-Dec-1941")
+```
+
+
+f.  1-5-1998. Comment on why you might be wrong.
+  1 and 5 can either be the month or day.
+```{r}
+mdy("1-5-1998")
+```
+
+g.  21-5-1998. Comment on why you know you are correct.
+  21 is too high to represent the 12 months in a year we have, so it should be the day not month, while 5 can represent the month.
+```{r}
+dmy("21-5-1998")
+```
+
+h.  2020-May-5 10:30 am
+```{r}
+ymd_hm("2020-May-5 10:30 am")
+```
+
+
+i.  2020-May-5 10:30 am PDT (ex Seattle)
+```{r}
+ymd_hm("2020-May-5 10:30 am", tz="US/Pacific" )
+```
+
+j.  2020-May-5 10:30 am AST (ex Puerto Rico)
+```{r}
+ymd_hm("2020-May-5 10:30 am", tz="America/Puerto_Rico")
+```
+
+
+## Problem 2
+
+Using just your date of birth (ex Sep 7, 1998) and today's date calculate the following:
+
+a.  Calculate the date of your 64th birthday.
+```{r}
+myBirthday <- mdy("Feb 21, 2006")
+todayDate <- mdy("Mar 17, 2026")
+```
+
+```{r}
+myBirthday + years(64)
+```
+
+
+b.  Calculate your current age (in years).
+```{r}
+currentAge <- year(as.period(myBirthday %--% todayDate))
+currentAge
+```
+
+
+c.  Using your result in part (b), calculate the date of your next birthday.
+```{r}
+nextBirthday <- myBirthday + years(currentAge + 1)
+nextBirthday
+```
+
+
+d.  The number of *days* until your next birthday.
+  341 days till my next birthday
+```{r}
+nextBirthday - todayDate
+```
+
+
+e.  The number of *months* and *days* until your next birthday.
+  number of months is 11 and the number of days are 4.
+```{r}
+(as.period(todayDate %--% nextBirthday, unit = "months"))
+```
+
+
+## Problem 3
+
+Suppose you have arranged for a phone call to be at 3 pm on May 8, 2015 at Arizona time. However, the recipient will be in Auckland, NZ. What time will it be there?
+  It will be 10 AM on May 9, 2015.
+```{r}
+mdy_h("May 8, 2015 3 PM", tz = "US/Arizona") %>%
+  with_tz(tz="Pacific/Auckland")
+
+```
+
+
+## Problem 4
+
+It turns out there is some interesting periodicity regarding the number of births on particular days of the year.
+
+a.  Using the `mosaicData` package, load the data set `Births78` which records the number of children born on each day in the United States in 1978. Because this problem is intended to show how to calculate the information using the `date`, remove all the columns *except* `date` and `births`.
+```{r}
+data('Births78', package='mosaicData')
+myBirths78 <- Births78 %>% select(date, births)
+```
+
+
+b.  Graph the number of `births` vs the `date` with date on the x-axis. What stands out to you? Why do you think we have this trend?
+  There is a up and down, or zig-zag pattern in the graph. There is the bottom layer that has less data points, but also the same pattern as the top layer, which has more data points. I think we have this trend due to the time of when a birth happens. Lets say the top is on weekdays because more people means more data, and the bottom layer is on weekends because less people give birth on those days.
+
+```{r}
+ggplot(data=myBirths78, aes(x=date, y=births)) +
+  geom_point()
+```
+
+
+c.  To test your assumption, we need to figure out the what day of the week each observation is. Use `dplyr::mutate` to add a new column named `dow` that is the day of the week (Monday, Tuesday, etc). This calculation will involve some function in the `lubridate` package and the `date` column.
+```{r}
+myBirths78 <- myBirths78 %>%
+  mutate(dow = wday(date, label=TRUE, abbr=FALSE))
+```
+
+
+d.  Plot the data with the point color being determined by the day of the week variable.
+```{r}
+ggplot(data=myBirths78, aes(x=date, y=births, color=dow)) +
+  geom_point()
+```
+
+
+
+
+
+
+
+
+
+
+
